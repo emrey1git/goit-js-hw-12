@@ -1,13 +1,12 @@
 import { defineConfig } from 'vite';
 import { glob } from 'glob';
 import FullReload from 'vite-plugin-full-reload';
-import SortCss from 'postcss-sort-media-queries';
 
 export default defineConfig(({ command }) => {
   return {
     base: '/goit-js-hw-12/',
     define: {
-      global: {}, 
+      global: {}, // simplelightbox için gerekli
     },
     root: 'src',
     build: {
@@ -38,16 +37,12 @@ export default defineConfig(({ command }) => {
       emptyOutDir: true,
     },
 
-    // 🔥 BURAYA EKLE
     optimizeDeps: {
       include: ['simplelightbox', 'izitoast'],
     },
 
     plugins: [
       FullReload(['./src/**/**.html']),
-      SortCss({
-        sort: 'mobile-first',
-      }),
     ],
   };
 });

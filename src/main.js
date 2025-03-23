@@ -150,80 +150,77 @@ const galeryContent = photoInfo => {
     let galleryBox = new SimpleLightbox('.gallery a', {
   captionsData: 'alt',
   captionDelay: 250,
-    });
-    
-form.addEventListener('submit', e => {
-    e.preventDefault();
-    //   console.log('Form gönderildi');
-    const inputValue = e.target.elements.search.value;
-    if (inputValue === "") {
-        iziToast.warning({
-            position: 'topRight',
-            message: 'Please enter a search query!',
-        })
-        return false;
-    }
-    else {
-        const item = document.createElement('li');
-        item.classList.add('gallery-item');
-
-        const itemLoading = document.createElement('span');
-        itemLoading.classList.add('loading');
-
-        item.appendChild(itemLoading);
-        item.style.textAlign = 'center';
-        item.style.border = 'none';
-        galleryList.appendChild(item);
-            
-        axios.get('https://pixabay.com/api/', {
-            params: {
-                key: '49491567-9a49db2ea0fcdbe14ac3185ce',
-                q: inputValue,
-                image_type: 'photo',
-                orientation: 'horizontal',
-                safesearch: true,
-            }
-        })
-            .then(response => {
-                const photos = response.data.hits;
-                console.log(photos);
-                galleryList.innerHTML = '';
-                if (photos.length === 0) {
-                    iziToast.error({
-                        position: 'topRight',
-                        color: 'red',
-                        message: 'Sorry, there are no images matching your search query. Please, try again!',
-                    })
-                } else {
-                    photos.forEach(photo => {
-                        galeryContent(photo);
-                    });
-                   if (galleryBox) {
-                        galleryBox.destroy();
-                    };
-
-
-                    galleryBox = new SimpleLightbox('.gallery a', {
-                        captionsData: 'alt',
-                        captionDelay: 250,
-                    });
-            
-                }
-            })
-            .catch(error => {
-                iziToast.error({
-                    position: 'topRight',
-                    color: 'red',
-                    message: error.message,
-                });
-                galleryList.innerHTML = '';
-                console.error('Pixabay error: ', error);
-            });
-        e.target.reset();
-            
-    };
 });
 
+form.addEventListener('submit', async e => {
+  e.preventDefault();
 
+  const inputValue = e.target.elements.search.value.trim();
 
+  if (inputValue === '') {
+    iziToast.warning({
+      position: 'topRight',
+      message: 'Please enter a search query!',
+    });
+    return;
+  }
 
+  // Yükleniyor animasyonu
+  const item = document.createElement('li');
+  item.classList.add('gallery-item');
+  const itemLoading = document.createElement('span');
+  itemLoading.classList.add('loading');
+  item.appendChild(itemLoading);
+  item.style.textAlign = 'center';
+  item.style.border = 'none';
+  galleryList.appendChild(item);
+
+  try {
+    const response = await axios.get('https://pixabay.com/api/', {
+      params: {
+        key: '49491567-9a49db2ea0fcdbe14ac3185ce',
+        q: inputValue,
+        image_type: 'photo',
+        orientation: 'horizontal',
+        safesearch: true,
+      },
+    });
+
+    const photos = response.data.hits;
+    console.log(photos);
+    galleryList.innerHTML = '';
+
+    if (photos.length === 0) {
+      iziToast.error({
+        position: 'topRight',
+        color: 'red',
+        message:
+          'Sorry, there are no images matching your search query. Please, try again!',
+      });
+      return;
+    }
+
+    photos.forEach(photo => {
+      galeryContent(photo);
+    });
+
+    if (galleryBox) {
+      galleryBox.destroy();
+    }
+
+    galleryBox = new SimpleLightbox('.gallery a', {
+      captionsData: 'alt',
+      captionDelay: 250,
+    });
+  } catch (error) {
+    galleryList.innerHTML = '';
+    console.error('Pixabay error: ', error);
+    iziToast.error({
+      position: 'topRight',
+      color: 'red',
+      message: error.message,
+    });
+  }
+
+  e.target.reset();
+});
